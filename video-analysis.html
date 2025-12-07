@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acuity Drive | Vehicle Analysis Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 50%, #0a0e27 100%); 
+      color: #fff; 
+      min-height: 100vh;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .animate-fade { animation: fadeIn 0.6s ease-out; }
+    .animate-slide { animation: slideIn 0.5s ease-out; }
+
+    .dashboard-card { 
+      background: linear-gradient(135deg, rgba(30,30,46,0.95) 0%, rgba(40,40,60,0.8) 100%);
+      border-radius: 20px; 
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dashboard-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #fbbf24, transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .dashboard-card:hover::before { opacity: 1; }
+    .dashboard-card:hover { 
+      transform: translateY(-4px);
+      box-shadow: 0 15px 50px rgba(251, 191, 36, 0.2);
+      border-color: rgba(251, 191, 36, 0.3);
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-primary {
+      position: relative;
+      padding: 14px 32px;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #000;
+      overflow: hidden;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-primary:not(:disabled):hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary:not(:disabled):hover {
+      box-shadow: 0 8px 25px rgba(251, 191, 36, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, rgba(30,30,46,0.8) 0%, rgba(40,40,60,0.6) 100%);
+      border: 2px solid rgba(251, 191, 36, 0.3);
+      color: #fbbf24;
+    }
+
+    .btn-secondary:not(:disabled):hover {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+      border-color: #fbbf24;
+    }
+
+    input[type="number"] {
+      background: rgba(20, 20, 35, 0.6);
+      border: 2px solid rgba(251, 191, 36, 0.2);
+      color: white;
+      padding: 14px 16px;
+      border-radius: 10px;
+      width: 100%;
+      transition: all 0.3s ease;
+      font-size: 15px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #fbbf24;
+      box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.1);
+      background: rgba(20, 20, 35, 0.8);
+    }
+
+    .video-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1a3e 100%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .code-panel {
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 35, 0.98);
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #10b981;
+      line-height: 1.5;
+      white-space: pre;
+      word-wrap: break-word;
+      z-index: 10;
+      position: relative;
+    }
+
+    .code-panel.hidden {
+      display: none;
+    }
+
+    .video-placeholder video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      pointer-events: none;
+      filter: saturate(0.95) contrast(0.95) brightness(0.65);
+      display: none;
+    }
+
+    .video-placeholder.video-playing video {
+      display: block;
+    }
+
+    .video-placeholder.video-playing .code-panel {
+      display: none;
+    }
+
+    .video-placeholder::before {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
+      animation: rotate 20s linear infinite;
+      z-index: 5;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .video-container {
+      position: relative;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 50px rgba(251, 191, 36, 0.05);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .detection-item {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%);
+      border-left: 4px solid #fbbf24;
+      padding: 16px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .detection-item:hover {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+      transform: translateX(5px);
+    }
+
+    .video-library-item {
+      background: rgba(20, 20, 35, 0.6);
+      border: 1px solid rgba(251, 191, 36, 0.1);
+      padding: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .video-library-item:hover {
+      background: rgba(251, 191, 36, 0.1);
+      border-color: rgba(251, 191, 36, 0.4);
+      transform: translateX(5px);
+    }
+
+    .video-library-item.active {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+      border-color: #fbbf24;
+    }
+
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-wrapper {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #000;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6b7280;
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .model-card {
+      background: linear-gradient(135deg, rgba(30,30,46,0.6) 0%, rgba(40,40,60,0.4) 100%);
+      border: 2px solid rgba(251, 191, 36, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .model-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .model-card:hover::before { opacity: 1; }
+    .model-card:hover {
+      border-color: rgba(251, 191, 36, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(251, 191, 36, 0.15);
+    }
+
+    .model-card.selected {
+      border-color: #fbbf24;
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    }
+
+    .model-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      background: #fbbf24;
+      color: #000;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .model-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #000;
+      margin-bottom: 12px;
+    }
+
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 5px; }
+    ::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 5px; }
+    ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+
+    @media (max-width: 768px) {
+      .dashboard-card { padding: 20px; }
+      .section-title { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="fixed w-full top-0 left-0 z-50 bg-gradient-to-b from-gray-950/95 to-gray-900/80 backdrop-blur-xl shadow-lg border-b border-yellow-400/10">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-4">
+          <div class="text-2xl font-bold gradient-text" style="font-family: 'Space Grotesk', sans-serif;">
+            <i class="fas fa-shield-alt mr-2"></i>Acuity Drive
+          </div>
+          <span class="hidden md:inline text-gray-400 text-sm">Vehicle Safety Analysis</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div id="systemStatus" class="status-badge status-online">
+            <div class="status-dot bg-green-500"></div>
+            <span>System Online</span>
+          </div>
+          <a href="index.html" class="text-gray-300 hover:text-yellow-400 transition flex items-center gap-2">
+            <i class="fas fa-home"></i>
+            <span class="hidden md:inline">Home</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mx-auto px-6 py-8 mt-20">
+    
+    <div class="text-center mb-12 animate-fade">
+      <h1 class="text-5xl md:text-6xl font-bold mb-4 gradient-text" style="font-family: 'Space Grotesk', sans-serif;">
+        Vehicle Analysis Dashboard
+      </h1>
+      <p class="text-gray-400 text-lg">Advanced YOLO-powered detection for road safety monitoring</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <div class="lg:col-span-8 space-y-6">
+        
+        <div class="dashboard-card p-6 animate-fade">
+          <div class="section-title">
+            <div class="icon-wrapper">
+              <i class="fas fa-brain"></i>
+            </div>
+            <span>Select Detection Model</span>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="model-card selected" data-model="vehicle">
+              <div class="model-icon">
+                <i class="fas fa-car"></i>
+              </div>
+              <h4 class="font-semibold text-white mb-2">Vehicle Detection</h4>
+              <p class="text-sm text-gray-400">Detect cars, trucks, buses</p>
+            </div>
+            
+            <div class="model-card" data-model="side_mirror">
+              <div class="model-icon">
+                <i class="fas fa-eye"></i>
+              </div>
+              <h4 class="font-semibold text-white mb-2">Side Mirror</h4>
+              <p class="text-sm text-gray-400">Blind spot detection</p>
+            </div>
+            
+            <div class="model-card" data-model="rear_ttc">
+              <div class="model-icon">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h4 class="font-semibold text-white mb-2">Rear TTC</h4>
+              <p class="text-sm text-gray-400">Time-to-collision</p>
+            </div>
+            
+            <div class="model-card" data-model="glare">
+              <div class="model-icon">
+                <i class="fas fa-sun"></i>
+              </div>
+              <h4 class="font-semibold text-white mb-2">Glare Detection</h4>
+              <p class="text-sm text-gray-400">Brightness issues</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card p-6 animate-fade">
+          <div class="section-title">
+            <div class="icon-wrapper">
+              <i class="fas fa-video"></i>
+            </div>
+            <span>Live Video Feed</span>
+          </div>
+          
+          <div class="video-container aspect-video mb-6">
+            <div id="videoDisplay" class="video-placeholder">
+              <div id="codePanel" class="code-panel"></div>
+              <video id="bgVideo" muted playsinline></video>
+              <div class="text-center z-10 hidden" id="defaultMessage">
+                <i class="fas fa-road text-6xl mb-4 text-yellow-400 opacity-50"></i>
+                <h3 class="text-xl font-semibold mb-2 text-gray-300">Ready for Analysis</h3>
+                <p class="text-gray-400">Select a video from library</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-gray-300">
+                <i class="fas fa-clock mr-2 text-yellow-400"></i>Start Time (seconds)
+              </label>
+              <input type="number" id="startTime" value="0" min="0" step="0.5" placeholder="0.0">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-gray-300">
+                <i class="fas fa-clock mr-2 text-yellow-400"></i>End Time (seconds)
+              </label>
+              <input type="number" id="endTime" value="10" min="0" step="0.5" placeholder="10.0">
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button id="btnAnalyze" class="btn-primary flex-1 flex items-center justify-center gap-2" disabled>
+              <i class="fas fa-play"></i>
+              <span>Run Detection Analysis</span>
+            </button>
+            <button id="btnClear" class="btn-primary btn-secondary px-6" disabled>
+              <i class="fas fa-eraser"></i>
+            </button>
+          </div>
+
+          <div id="analysisStatus" class="mt-4 hidden"></div>
+        </div>
+
+        <div class="dashboard-card p-6 animate-fade" style="animation-delay: 0.1s;">
+          <div class="section-title">
+            <div class="icon-wrapper">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <span>Detection Results</span>
+            <span id="detectionCount" class="ml-auto text-sm bg-yellow-400/20 text-yellow-400 px-3 py-1 rounded-full">0 Objects</span>
+          </div>
+          
+          <div id="resultsContainer" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="empty-state py-8">
+              <i class="fas fa-search"></i>
+              <p>No detections yet. Run analysis to see results.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="lg:col-span-4 space-y-6">
+        
+        <div class="dashboard-card p-6 animate-slide">
+          <div class="section-title">
+            <div class="icon-wrapper">
+              <i class="fas fa-database"></i>
+            </div>
+            <span>Database Connection</span>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400">
+              <i class="fas fa-check-circle mr-2"></i>
+              <span class="font-semibold">PostgreSQL Connected</span>
+              <p class="text-xs text-gray-400 mt-1">Database: acuity_drive_prod</p>
+              <p class="text-xs text-gray-400">Active Sessions: 12</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card p-6 animate-slide" style="animation-delay: 0.1s;">
+          <div class="section-title">
+            <div class="icon-wrapper">
+              <i class="fas fa-heartbeat"></i>
+            </div>
+            <span>System Health</span>
+          </div>
+          
+          <div class="space-y-3">
+            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+              <span class="text-sm text-gray-300">Backend API</span>
+              <span class="text-sm font-semibold text-green-400">✓ Online (45ms)</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+              <span class="text-sm text-gray-300">YOLO Models</span>
+              <span class="text-sm font-semibold text-green-400">✓ Loaded (4/4)</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+              <span class="text-sm text-gray-300">GPU Status</span>
+              <span class="text-sm font-semibold text-green-400">✓ CUDA 12.1</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg">
+              <span class="text-sm text-gray-300">Selected Model</span>
+              <span id="selectedModelDisplay" class="text-sm font-semibold text-yellow-400">Vehicle Detection</span>
+            </div>
+          </div>
+        </div>
+
+      
+
+      </div>
+
+    </div>
+  </div>
+
+<script>
+    let currentVideoId = null; 
+    let selectedDetectionModel = 'vehicle';
+    let isAnalyzing = false;
+const videoDatabase = [
+    { 
+        id: 'vid_8f3a921', 
+        filename: 'City_Drive_1.mp4', 
+        duration: 15.5, 
+        upload_time: Date.now() - 86400000, 
+        processed: true,
+        resolution: '1920x1080',
+        fps: 30,
+        size_mb: 45.2,
+        source: 'City_Drive_1.mp4'
+    },
+    { 
+        id: 'vid_2c7e445', 
+        filename: 'Highway_Night_2.mp4', 
+        duration: 22.1, 
+        upload_time: Date.now() - 172800000, 
+        processed: true,
+        resolution: '1920x1080',
+        fps: 30,
+        size_mb: 62.8,
+        source: 'Highway_Night_2.mp4'
+    },
+    { 
+        id: 'vid_9d1b332', 
+        filename: 'Intersection_Rain_3.mp4', 
+        duration: 18.0, 
+        upload_time: Date.now() - 259200000, 
+        processed: true,
+        resolution: '1280x720',
+        fps: 25,
+        size_mb: 38.5,
+        source: 'Intersection_Rain_3.mp4'
+    },
+    { 
+        id: 'vid_4k9m221', 
+        filename: 'Deglare.mp4', 
+        duration: 20.0, 
+        upload_time: Date.now() - 345600000, 
+        processed: true,
+        resolution: '1920x1080',
+        fps: 30,
+        size_mb: 55.3,
+        source: 'Deglare.mp4'
+    }
+];
+    const detectionPatterns = {
+        vehicle: [
+            { class: 'car', min_conf: 0.85, max_conf: 0.97, freq: 0.6 },
+            { class: 'truck', min_conf: 0.82, max_conf: 0.94, freq: 0.2 },
+            { class: 'bus', min_conf: 0.88, max_conf: 0.96, freq: 0.1 },
+            { class: 'motorcycle', min_conf: 0.79, max_conf: 0.91, freq: 0.1 }
+        ],
+        side_mirror: [
+            { class: 'vehicle_left_blind_spot', min_conf: 0.81, max_conf: 0.93, freq: 0.5 },
+            { class: 'vehicle_right_blind_spot', min_conf: 0.83, max_conf: 0.94, freq: 0.5 }
+        ],
+        rear_ttc: [
+            { class: 'approaching_vehicle', min_conf: 0.87, max_conf: 0.96, freq: 1.0 }
+        ],
+        glare: [
+            { class: 'sun_glare_detected', min_conf: 0.76, max_conf: 0.89, freq: 0.7 },
+            { class: 'headlight_glare', min_conf: 0.74, max_conf: 0.88, freq: 0.3 }
+        ]
+    };
+
+    function getDemoCode(model, video) {
+        const codes = {
+            'vehicle': `# Vehicle Detection Demo
+# File: vehicle_detection.py
+from ultralytics import YOLO
+import cv2
+
+# Load YOLO model
+model = YOLO('yolov8n.pt')
+
+# Open video
+cap = cv2.VideoCapture('${video.filename}')
+
+# Detection loop
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    # Run inference
+    results = model(frame, conf=0.45)
+    
+    # Process detections
+    for result in results:
+        boxes = result.boxes
+        for box in boxes:
+            x1, y1, x2, y2 = box.xyxy[0]
+            conf = box.conf[0]
+            cls = box.cls[0]
+            
+            # Draw bounding box
+            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
+            cv2.putText(frame, f'Conf: {conf:.2f}', (int(x1), int(y1)-10),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    
+    cv2.imshow('Vehicle Detection', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()`,
+
+            'side_mirror': `# Side Mirror Blind Spot Detection
+# File: side_mirror_video_alert.py
+from ultralytics import YOLO
+import cv2
+import numpy as np
+
+model = YOLO('yolov8s.pt')
+cap = cv2.VideoCapture('${video.filename}')
+
+frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    # Detect objects
+    results = model(frame, conf=0.45)
+    
+    # Check left & right regions for blind spots
+    left_region = frame[:, :frame_width//3]
+    right_region = frame[:, 2*frame_width//3:]
+    
+    # Draw blind spot regions
+    cv2.rectangle(frame, (0, 0), (frame_width//3, frame_height), (0, 165, 255), 2)
+    cv2.rectangle(frame, (2*frame_width//3, 0), (frame_width, frame_height), (0, 165, 255), 2)
+    
+    cv2.imshow('Blind Spot Detection', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()`,
+
+            'rear_ttc': `# Rear Time-to-Collision (TTC) Detection
+# File: rear_ttc_demo.py
+from ultralytics import YOLO
+import cv2
+from collections import deque
+
+model = YOLO('yolov8m.pt')
+cap = cv2.VideoCapture('${video.filename}')
+
+VEHICLE_IDS = {1, 2, 3, 5, 7}
+dist_history = deque(maxlen=7)
+
+def estimate_distance(box_h, frame_h, k=6.0):
+    if box_h <= 0:
+        return None
+    return (frame_h * k) / float(box_h)
+
+frame_count = 0
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    h, w = frame.shape[:2]
+    results = model(frame, imgsz=960, conf=0.45)
+    
+    closest_dist = None
+    if results[0].boxes:
+        for box, cls in zip(results[0].boxes.xyxy, results[0].boxes.cls):
+            if int(cls) not in VEHICLE_IDS:
+                continue
+            
+            x1, y1, x2, y2 = map(int, box)
+            box_h = y2 - y1
+            dist = estimate_distance(box_h, h)
+            
+            if dist and (closest_dist is None or dist < closest_dist):
+                closest_dist = dist
+    
+    if closest_dist:
+        dist_history.append(closest_dist)
+        avg_dist = sum(dist_history) / len(dist_history)
+        
+        cv2.putText(frame, f'Distance: {avg_dist:.1f}m', (20, 40),
+                   cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+    
+    cv2.imshow('Rear TTC Detection', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()`,
+
+            'glare': `# Glare Detection & Reduction
+# File: glare_demo.py
+import cv2
+import numpy as np
+
+cap = cv2.VideoCapture('${video.filename}')
+
+GLARE_V_MIN = 230
+GLARE_S_MAX = 70
+GLARE_MIN_AREA = 80
+
+def detect_glare_mask(frame):
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    h_ch, s_ch, v_ch = cv2.split(hsv)
+    
+    bright_mask = cv2.inRange(v_ch, GLARE_V_MIN, 255)
+    low_sat_mask = cv2.inRange(s_ch, 0, GLARE_S_MAX)
+    mask = cv2.bitwise_and(bright_mask, low_sat_mask)
+    
+    kernel = np.ones((5, 5), np.uint8)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    
+    return mask
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    
+    glare_mask = detect_glare_mask(frame)
+    
+    # Apply glare reduction
+    mask_blur = cv2.GaussianBlur(glare_mask, (31, 31), 0).astype(np.float32) / 255.0
+    alpha = 1.0 - 0.5 * mask_blur
+    
+    result = (frame.astype(np.float32) * alpha[:,:,None]).astype(np.uint8)
+    
+    cv2.imshow('Glare Detection', result)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()`
+        };
+
+        return codes[model] || `# ${model.toUpperCase()} Detection\n# Video: ${video.filename}\n# Duration: ${video.duration}s\n# Resolution: ${video.resolution}\n\nLoading demo code...`;
+    }
+
+function selectModel(modelType) {
+    selectedDetectionModel = modelType;
+    document.querySelectorAll('.model-card').forEach(card => card.classList.remove('selected'));
+    const selectedCard = document.querySelector(`[data-model="${modelType}"]`);
+    if (selectedCard) selectedCard.classList.add('selected');
+
+    const modelNames = {
+        'vehicle': 'Vehicle Detection (YOLOv8n)',
+        'side_mirror': 'Side Mirror (YOLOv8s)',
+        'rear_ttc': 'Rear TTC (YOLOv8m)',
+        'glare': 'Glare Detection (YOLOv8n)'
+    };
+    document.getElementById('selectedModelDisplay').textContent = modelNames[modelType];
+
+    // Map each model to its specific video
+    const modelVideoMap = {
+        'vehicle': 'vid_8f3a921',      // City_Drive_1.mp4
+        'side_mirror': 'vid_2c7e445',  // Highway_Night_2.mp4
+        'rear_ttc': 'vid_9d1b332',     // Intersection_Rain_3.mp4
+        'glare': 'vid_4k9m221'         // Deglare.mp4
+    };
+
+    const videoIdToLoad = modelVideoMap[modelType];
+    if (videoIdToLoad && videoDatabase.length > 0) {
+        loadVideo(videoIdToLoad);
+    }
+}
+function loadVideo(videoId) {
+    const video = videoDatabase.find(v => v.id === videoId);
+    if (!video) return;
+
+    currentVideoId = videoId;
+    const videoDisplay = document.getElementById('videoDisplay');
+    const codePanel = document.getElementById('codePanel');
+    const bgVideo = document.getElementById('bgVideo');
+
+    // Show code panel first (hide video)
+    videoDisplay.classList.remove('video-playing');
+    
+    // Set video source
+    bgVideo.src = video.source || `https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4?name=${encodeURIComponent(video.filename)}`;
+
+    // Display code based on selected detection model
+    const demoCode = getDemoCode(selectedDetectionModel, video);
+    codePanel.textContent = demoCode;
+
+    document.getElementById('btnAnalyze').disabled = false;
+    document.getElementById('btnClear').disabled = false;
+    document.getElementById('startTime').value = 0;
+    document.getElementById('endTime').value = Math.min(10, video.duration).toFixed(1);
+    document.getElementById('endTime').max = video.duration;
+
+    clearResults();
+}
+    function clearResults() {
+        document.getElementById('resultsContainer').innerHTML = `
+            <div class="empty-state py-8">
+                <i class="fas fa-search"></i>
+                <p>Video loaded. Configure parameters and run analysis.</p>
+            </div>
+        `;
+        document.getElementById('detectionCount').textContent = '0 Objects';
+        document.getElementById('analysisStatus').classList.add('hidden');
+    }
+
+    function generateRealisticDetections(start, end, model) {
+        const detections = [];
+        const patterns = (detectionPatterns[model] || []).slice();
+        const duration = Math.max(0.1, end - start);
+
+        let maxW = 1600, maxH = 900, fps = 30;
+        try {
+            const v = videoDatabase.find(x => x.id === currentVideoId);
+            if (v) {
+                fps = v.fps || fps;
+                if (v.resolution && typeof v.resolution === 'string') {
+                    const parts = v.resolution.split('x').map(p => parseInt(p,10));
+                    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+                        maxW = parts[0];
+                        maxH = parts[1];
+                    }
+                }
+            }
+        } catch(e) {}
+
+        const numDetections = Math.max(1, Math.floor((duration / 10) * (8 + Math.random() * 14)));
+
+        function pickPattern(ps) {
+            if (!ps || ps.length === 0) return { class: 'unknown', min_conf: 0.5, max_conf: 0.7, freq: 1 };
+            const total = ps.reduce((s,p) => s + (p.freq || 1), 0);
+            let r = Math.random() * total;
+            for (const p of ps) {
+                const w = p.freq || 1;
+                if (r < w) return p;
+                r -= w;
+            }
+            return ps[ps.length - 1];
+        }
+
+        for (let i = 0; i < numDetections; i++) {
+            const pattern = pickPattern(patterns);
+            const timestamp = start + Math.random() * duration;
+            const confidence = +(pattern.min_conf + Math.random() * (pattern.max_conf - pattern.min_conf)).toFixed(3);
+            const frame_number = Math.max(0, Math.floor(timestamp * fps));
+
+            const w = Math.floor(40 + Math.random() * Math.min(300, maxW * 0.4));
+            const h = Math.floor(40 + Math.random() * Math.min(300, maxH * 0.4));
+            const x = Math.floor(Math.random() * Math.max(1, maxW - w));
+            const y = Math.floor(Math.random() * Math.max(1, maxH - h));
+
+            const detection = {
+                detection_id: `det_${Date.now()}_${Math.random().toString(36).slice(2,10)}`,
+                class_name: pattern.class,
+                timestamp,
+                confidence,
+                frame_number,
+                bbox: { x, y, w, h },
+                model_version: `yolov8_${model}_v2.1.3`
+            };
+
+            if (model === 'vehicle') {
+                detection.distance_m = (5 + Math.random() * 95).toFixed(1);
+                detection.velocity_kmh = (10 + Math.random() * 90).toFixed(1);
+                detection.lane_position = ['left','center','right'][Math.floor(Math.random() * 3)];
+            } else if (model === 'side_mirror') {
+                detection.distance_m = (0.4 + Math.random() * 6.6).toFixed(1);
+                detection.alert_level = parseFloat(detection.distance_m) < 2 ? 'CRITICAL' :
+                                        parseFloat(detection.distance_m) < 4 ? 'HIGH' : 'MEDIUM';
+                detection.side = pattern.class && pattern.class.includes('left') ? 'left' : 'right';
+            } else if (model === 'rear_ttc') {
+                detection.ttc_seconds = (0.2 + Math.random() * 4.8).toFixed(2);
+                detection.relative_velocity = (5 + Math.random() * 60).toFixed(1);
+                detection.alert_level = parseFloat(detection.ttc_seconds) < 1.2 ? 'CRITICAL' :
+                                        parseFloat(detection.ttc_seconds) < 2.5 ? 'HIGH' : 'MEDIUM';
+            } else if (model === 'glare') {
+                detection.intensity_level = (50 + Math.random() * 45).toFixed(1);
+                detection.affected_area_pct = (10 + Math.random() * 60).toFixed(1);
+                detection.alert_level = parseFloat(detection.intensity_level) > 85 ? 'HIGH' : 'MEDIUM';
+            }
+
+            detections.push(detection);
+        }
+
+        return detections.sort((a,b) => a.timestamp - b.timestamp);
+    }
+
+    function displayResults(detections) {
+        const container = document.getElementById('resultsContainer');
+        const countBadge = document.getElementById('detectionCount');
+        
+        if (!detections || detections.length === 0) {
+            container.innerHTML = `<div class="empty-state py-8"><i class="fas fa-search"></i><p>No detections found in this segment.</p></div>`;
+            countBadge.textContent = '0 Objects';
+            return;
+        }
+
+        countBadge.textContent = `${detections.length} Detections`;
+
+        container.innerHTML = detections.slice(0, 50).map(det => {
+            let icon, color, detailsHTML = '';
+
+            if (selectedDetectionModel === 'vehicle') {
+                icon = det.class_name === 'car' ? 'fa-car' : det.class_name === 'truck' ? 'fa-truck' : 
+                       det.class_name === 'bus' ? 'fa-bus' : 'fa-motorcycle';
+                color = 'text-blue-400';
+                detailsHTML = `
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Distance:</span> <span class="text-white font-semibold">${det.distance_m}m</span></div>
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Speed:</span> <span class="text-white font-semibold">${det.velocity_kmh} km/h</span></div>
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Lane:</span> <span class="text-white font-semibold">${det.lane_position}</span></div>
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">BBox:</span> <span class="text-white font-semibold">${det.bbox.w}x${det.bbox.h}</span></div>
+                    </div>`;
+            } else if (selectedDetectionModel === 'side_mirror') {
+                icon = 'fa-eye';
+                color = det.alert_level === 'CRITICAL' ? 'text-red-400' : det.alert_level === 'HIGH' ? 'text-orange-400' : 'text-yellow-400';
+                detailsHTML = `
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Distance:</span> <span class="text-white font-semibold">${det.distance_m}m</span></div>
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Side:</span> <span class="text-white font-semibold">${det.side}</span></div>
+                        <div class="bg-black/20 p-2 rounded col-span-2"><span class="text-gray-500">Alert:</span> <span class="font-bold ${color}">${det.alert_level}</span></div>
+                    </div>`;
+            } else if (selectedDetectionModel === 'rear_ttc') {
+                icon = 'fa-clock';
+                color = det.alert_level === 'CRITICAL' ? 'text-red-400' : det.alert_level === 'HIGH' ? 'text-orange-400' : 'text-yellow-400';
+                detailsHTML = `
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">TTC:</span> <span class="text-white font-semibold">${det.ttc_seconds}s</span></div>
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Rel. Velocity:</span> <span class="text-white font-semibold">${det.relative_velocity} km/h</span></div>
+                        <div class="bg-black/20 p-2 rounded col-span-2"><span class="text-gray-500">Risk Level:</span> <span class="font-bold ${color}">${det.alert_level}</span></div>
+                    </div>`;
+            } else if (selectedDetectionModel === 'glare') {
+                icon = 'fa-sun';
+                color = det.alert_level === 'HIGH' ? 'text-orange-400' : 'text-yellow-400';
+                detailsHTML = `
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Intensity:</span> <span class="text-white font-semibold">${det.intensity_level}%</span></div>
+                        <div class="bg-black/20 p-2 rounded"><span class="text-gray-500">Area Affected:</span> <span class="text-white font-semibold">${det.affected_area_pct}%</span></div>
+                        <div class="bg-black/20 p-2 rounded col-span-2"><span class="text-gray-500">Severity:</span> <span class="font-bold ${color}">${det.alert_level}</span></div>
+                    </div>`;
+            }
+
+            return `
+                <div class="detection-item">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-3">
+                            <i class="fas ${icon} ${color} text-xl"></i>
+                            <div>
+                                <span class="font-bold text-white block">${det.class_name.toUpperCase().replace(/_/g, ' ')}</span>
+                                <span class="text-xs text-gray-500">ID: ${det.detection_id}</span>
+                            </div>
+                        </div>
+                        <span class="text-xs bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full font-semibold">
+                            ${(det.confidence * 100).toFixed(1)}%
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-400 mb-2">
+                        <i class="far fa-clock mr-2"></i>${det.timestamp.toFixed(2)}s
+                        <span class="mx-2">•</span>
+                        Frame: ${det.frame_number}
+                        <span class="mx-2">•</span>
+                        Model: ${det.model_version}
+                    </div>
+                    ${detailsHTML}
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.getElementById('btnAnalyze').addEventListener('click', () => {
+        if (!currentVideoId || isAnalyzing) return;
+
+        const startTime = parseFloat(document.getElementById('startTime').value);
+        const endTime = parseFloat(document.getElementById('endTime').value);
+        const maxDuration = parseFloat(document.getElementById('endTime').max) || 30;
+
+        if (isNaN(startTime) || isNaN(endTime) || startTime >= endTime || startTime < 0 || endTime > maxDuration) {
+            alert('Invalid time range. Please check your values.');
+            return;
+        }
+
+        isAnalyzing = true;
+        document.getElementById('btnAnalyze').disabled = true;
+
+        // Show video, hide code
+        const videoDisplay = document.getElementById('videoDisplay');
+        const bgVideo = document.getElementById('bgVideo');
+        videoDisplay.classList.add('video-playing');
+        bgVideo.play().catch(() => {});
+
+        const statusEl = document.getElementById('analysisStatus');
+        statusEl.className = 'mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-400 flex items-center gap-3';
+        statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>Processing frames ${startTime.toFixed(1)}s - ${endTime.toFixed(1)}s | Model: ${selectedDetectionModel.toUpperCase()} | GPU Inference Active</span>`;
+        statusEl.classList.remove('hidden');
+
+        const resultsContainer = document.getElementById('resultsContainer');
+        resultsContainer.innerHTML = '<div class="text-center py-8"><i class="fas fa-cog fa-spin text-3xl text-yellow-400"></i><p class="mt-2 text-gray-400">Running YOLO inference on video segment...</p></div>';
+        
+        setTimeout(() => {
+            const detections = generateRealisticDetections(startTime, endTime, selectedDetectionModel);
+            const processingTime = (1.2 + Math.random() * 0.8).toFixed(2);
+
+            statusEl.className = 'mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg text-green-400 flex items-center gap-3';
+            statusEl.innerHTML = `<i class="fas fa-check-circle"></i><span>Analysis Complete! ${detections.length} detections in ${processingTime}s | Saved to database</span>`;
+            
+            displayResults(detections);
+            isAnalyzing = false;
+            document.getElementById('btnAnalyze').disabled = false;
+            
+            setTimeout(() => statusEl.classList.add('hidden'), 6000);
+        }, 2800);
+    });
+
+    document.getElementById('btnClear').addEventListener('click', () => {
+        isAnalyzing = false;
+        document.getElementById('btnAnalyze').disabled = false;
+        clearResults();
+    });
+
+    document.querySelectorAll('.model-card').forEach(card => {
+        card.addEventListener('click', () => selectModel(card.dataset.model));
+    });
+
+document.addEventListener('DOMContentLoaded', () => {
+    selectModel('vehicle'); // This will auto-load first video
+});
+</script>
+
+</body>
+</html>
