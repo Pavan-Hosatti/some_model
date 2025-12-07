@@ -599,47 +599,47 @@
 const videoDatabase = [
     { 
         id: 'vid_8f3a921', 
-        filename: 'City_Drive_1.mp4', 
+        filename: 'city_drive_1.mp4', 
         duration: 15.5, 
         upload_time: Date.now() - 86400000, 
         processed: true,
         resolution: '1920x1080',
         fps: 30,
         size_mb: 45.2,
-        source: 'City_Drive_1.mp4'
+        source: 'city_drive_1.mp4'
     },
     { 
         id: 'vid_2c7e445', 
-        filename: 'Highway_Night_2.mp4', 
+        filename: 'highway_night_2.mp4', 
         duration: 22.1, 
         upload_time: Date.now() - 172800000, 
         processed: true,
         resolution: '1920x1080',
         fps: 30,
         size_mb: 62.8,
-        source: 'Highway_Night_2.mp4'
+        source: 'highway_night_2.mp4'
     },
     { 
         id: 'vid_9d1b332', 
-        filename: 'Intersection_Rain_3.mp4', 
+        filename: 'intersection_rain_3.mp4', 
         duration: 18.0, 
         upload_time: Date.now() - 259200000, 
         processed: true,
         resolution: '1280x720',
         fps: 25,
         size_mb: 38.5,
-        source: 'Intersection_Rain_3.mp4'
+        source: 'intersection_rain_3.mp4'
     },
     { 
         id: 'vid_4k9m221', 
-        filename: 'Deglare.mp4', 
+        filename: 'deglare.mp4', 
         duration: 20.0, 
         upload_time: Date.now() - 345600000, 
         processed: true,
         resolution: '1920x1080',
         fps: 30,
         size_mb: 55.3,
-        source: 'Deglare.mp4'
+        source: 'deglare.mp4'
     }
 ];
     const detectionPatterns = {
@@ -857,7 +857,7 @@ function selectModel(modelType) {
 
     // Map each model to its specific video
     const modelVideoMap = {
-        'vehicle': 'vid_8f3a921',      // City_Drive_1.mp4
+        'vehicle': 'vid_8f3a921',      // city_drive_1.mp4
         'side_mirror': 'vid_2c7e445',  // Highway_Night_2.mp4
         'rear_ttc': 'vid_9d1b332',     // Intersection_Rain_3.mp4
         'glare': 'vid_4k9m221'         // Deglare.mp4
